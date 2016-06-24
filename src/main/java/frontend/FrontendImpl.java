@@ -1,6 +1,8 @@
 package frontend;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tamplater.PageGenerator;
 import base.Adress;
@@ -56,8 +60,7 @@ public class FrontendImpl extends HttpServlet implements Frontend, Runnable{
 			response.setStatus(HttpServletResponse.SC_OK);
 
 			HttpSession session = request.getSession();
-			UserSession userSession = sessions.get(session
-					.getId());
+			UserSession userSession = sessions.get(session.getId());
 			if (userSession == null) {
 				responseUserPage(response, "Auth error");
 				return;
@@ -104,7 +107,7 @@ public class FrontendImpl extends HttpServlet implements Frontend, Runnable{
     
     private void responseUserGamePage(HttpServletResponse response, String userState) throws IOException {
         Map<String, Object> pageVariables = new HashMap<>();
-        pageVariables.put("refreshPeriod", "1000");
+        pageVariables.put("refreshPeriod", "100");
         pageVariables.put("serverTime", getTime());
         pageVariables.put("userState", userState);
         response.getWriter().println(PageGenerator.getPage("gamepage.tml", pageVariables));
@@ -129,6 +132,32 @@ public class FrontendImpl extends HttpServlet implements Frontend, Runnable{
 			response.setStatus(HttpServletResponse.SC_OK);
 
 			responseUserPage(response, "authorization started");
+		}else if (request.getPathInfo().equals("/gamepage")) {
+			HttpSession session = request.getSession();
+			UserSession userSession = sessions.get(session.getId());
+			BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream()));
+			String json = "";
+			if(br != null){
+				json = br.readLine();
+			}
+			ObjectMapper mapper = new ObjectMapper();
+			GameStateForSession gmfs = (GameStateForSession)mapper.readValue(json,GameStateForSession.class);
+			if(gmfs != null){
+				if(!gmfs.isStopGame()){
+					gmfs.setAdversaryClicks(gmfs.getAdversaryClicks() + 1);
+				};
+				Double gameTime = (gmfs.getAdversaryClicks()*.1);
+				gmfs.setGameTime(gameTime.toString());
+				gmfs.setMessage("Game still continue!");
+				if(gmfs.getAdversaryClicks()<100){
+					gmfs.setStopGame(false);
+				}else{
+					gmfs.setStopGame(true);
+					gmfs.setMessage("Game over!");
+				}
+			}
+			response.setContentType("application/json");
+			mapper.writeValue(response.getOutputStream(), gmfs);
 		}
 	}
 

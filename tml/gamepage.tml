@@ -2,28 +2,19 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Game page</title>
-    <script>
-        function setClientTime() {
-            var currentTime = new Date();
-            var hours = currentTime.getHours();
-            var minutes = currentTime.getMinutes();
-            var seconds = currentTime.getSeconds();
-            if (minutes < 10)
-                minutes = '0' + minutes;
-            if (seconds < 10)
-                seconds = '0' + seconds;
-            document.getElementById('ClientTime').innerHTML = hours + ':' + minutes + ':' + seconds;
-        }
-        function refresh() {
-			document.getElementById('reloader').submit();
-            //location.reload(true);
-        }
-    </script>
+    <script src='jquery-1.11.2.min.js'></script>
+    <script src='my_json.js'></script>
 </head>
-<body onload='setInterval(function(){refresh()}, ${refreshPeriod} ); setClientTime();'>
-<form id='reloader' method='get'> </form>
-<p>Client time: <span id='ClientTime'></span></p>
-<p>Server time: ${serverTime}</p>
+<body onload='setInterval(function(){sendAjax()}, ${refreshPeriod} ); '>
+<form id='clickCounter' action = "/userid" method='post'>
+	<p>Your clicks:<input type='number' disabled id='yourClicks' value='0' /></p>
+	<p>Advarsary clicks:<input type='number' disabled id='adversaryClicks' value='0' /></p>
+	<p><input type='hidden' disabled id='stopGame' value='false' /></p>
+	<p><button id='clickButton' type="button" onclick='countClicks()'>Click here</button></p>
+	<p><span id='message'></span></p> 
+</form>
+<p>Game time: <span id='gameTime'></span></p>
+<p>Server time: <span id='serverTime'>${serverTime}</span></p>
 <p>User state: ${userState}</p>
 <p><a href="/userid">Домой</p>
 </body>

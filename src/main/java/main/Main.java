@@ -11,6 +11,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import acountService.AcountServiceImpl;
 import frontend.FrontendImpl;
+import gameMechanics.GameMechanicsImpl;
 
 public class Main {
     public static void main(String[] args) throws Exception
@@ -28,8 +29,10 @@ public class Main {
         MessageSystemImpl ms = new MessageSystemImpl();
     	FrontendImpl frontend = new FrontendImpl(ms);
     	AcountServiceImpl ac = new AcountServiceImpl(ms);
+    	GameMechanicsImpl gm = new GameMechanicsImpl(ms);
     	(new Thread(frontend)).start();
     	(new Thread(ac)).start();
+    	(new Thread(gm)).start();
     	
 		Server server = new Server(port);
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
